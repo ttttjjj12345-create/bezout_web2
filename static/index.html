@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>進階貝祖恆等式計算器</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.27/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.27/dist/katex.min.js"></script>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero">
+      <div class="eyebrow">CONTROL SYSTEMS · POLYNOMIAL COPRIME FACTORIZATION</div>
+      <h1>🎛️ 互質因式分解與擴展貝祖恆等式驗證</h1>
+      <p>支援狀態空間、G(s) 文字輸入，以及圖片辨識轉移函數。</p>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar card">
+        <div class="section-title">系統輸入設定</div>
+        <label class="field-label">選擇輸入模式</label>
+        <div class="mode-switch">
+          <button data-mode="state" class="mode-btn active">1 · 狀態空間</button>
+          <button data-mode="transfer" class="mode-btn">2 · G(s)</button>
+          <button data-mode="image" class="mode-btn">3 · 圖片辨識</button>
+        </div>
+
+        <label class="field-label" for="poles">期望閉迴路極點</label>
+        <input id="poles" value="-2, -3" />
+        <div class="hint">用逗號分隔，例如 <code>-2, -3</code>。</div>
+
+        <section id="statePanel" class="input-panel">
+          <div class="panel-heading">📝 模式 1：直接輸入 ABCD</div>
+          <div class="matrix-grid">
+            <div>
+              <label>A</label>
+              <textarea id="A" rows="4">0, 1
+2, -1</textarea>
+            </div>
+            <div>
+              <label>B</label>
+              <textarea id="B" rows="4">0
+1</textarea>
+            </div>
+            <div>
+              <label>C</label>
+              <textarea id="C" rows="3">1, 0</textarea>
+            </div>
+            <div>
+              <label>D</label>
+              <textarea id="D" rows="3">0</textarea>
+            </div>
+          </div>
+          <div class="hint">列可用換行或分號分隔；欄可用逗號或空白分隔。</div>
+        </section>
+
+        <section id="transferPanel" class="input-panel hidden">
+          <div class="panel-heading">📝 模式 2：輸入轉移函數 G(s)</div>
+          <label class="field-label" for="gstr">以 s 為變數的數學式</label>
+          <input id="gstr" value="1/(s - 1)" />
+          <div class="hint">例如 <code>1/(s^2 + 2*s - 3)</code>。</div>
+        </section>
+
+        <section id="imagePanel" class="input-panel hidden">
+          <div class="panel-heading">📸 模式 3：圖片自動辨識 G(s)</div>
+          <label class="field-label" for="apiKey">Gemini API Key（可選）</label>
+          <input id="apiKey" type="password" placeholder="若網站已設定 API Key，可留白" />
+          <div class="hint">不填也可以使用網站管理者設定的 <code>GEMINI_API_KEY</code>。</div>
+          <label class="field-label" for="imageFile">上傳包含 G(s) 的圖片</label>
+          <input id="imageFile" type="file" accept="image/png,image/jpeg" />
+          <div class="image-preview-wrap hidden" id="previewWrap">
+            <img id="imagePreview" alt="上傳圖片預覽" />
+          </div>
+        </section>
+
+        <button id="calculateBtn" class="primary-btn">開始計算</button>
+        <div id="status" class="status"></div>
+      </aside>
+
+      <section class="content">
+        <div id="emptyState" class="empty card">
+          <div class="empty-icon">∑</div>
+          <h2>等待輸入</h2>
+          <p>設定系統模型與期望極點後，按下「開始計算」。</p>
+        </div>
+
+        <div id="results" class="hidden">
+          <div class="top-summary card">
+            <div>
+              <div class="eyebrow">CALCULATION RESULT</div>
+              <h2>🚀 互質因式分解與貝祖恆等式運算結果</h2>
+              <p id="dimensionText"></p>
+              <p id="recognizedText" class="recognized hidden"></p>
+            </div>
+            <div class="gain-box">
+              <div><span>F</span><div id="fLatex"></div></div>
+              <div><span>L</span><div id="lLatex"></div></div>
+            </div>
+          </div>
+
+          <div class="section-heading">📌 右側矩陣因子</div>
+          <div class="factor-grid" id="rightFactors"></div>
+
+          <div class="section-heading">📌 左側矩陣因子（帶波浪 / 講義型）</div>
+          <div class="factor-grid" id="leftFactors"></div>
+
+          <div class="section-heading">🎯 擴展貝祖恆等式驗證</div>
+          <div class="identity card">
+            <div class="big-equation" id="identityEq"></div>
+          </div>
+          <div class="verify-grid" id="equations"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <template id="factorTemplate">
+    <article class="factor-card card">
+      <div class="factor-name"></div>
+      <div class="latex factor-latex"></div>
+    </article>
+  </template>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
